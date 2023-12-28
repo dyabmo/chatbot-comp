@@ -1,0 +1,6 @@
+langchain
+streamlit
+openai
+cassio>=0.1.3
+datasets
+tiktoken
