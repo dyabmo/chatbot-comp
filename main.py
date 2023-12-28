@@ -1,19 +1,21 @@
 from langchain.prompts import PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain.chains import LLMChain, RetrievalQA
+from langchain.chains import LLMChain
 from langchain.chains.conversation.memory import ConversationBufferMemory
 from langchain.agents import AgentType, initialize_agent
 from langchain.tools import Tool, YouTubeSearchTool
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.vectorstores.neo4j_vector import Neo4jVector
 import streamlit as st
 from langchain.vectorstores import Cassandra
-from cassandra.cluster import Cluster
-from cassandra.auth import PlainTextAuthProvider
 from langchain.indexes.vectorstore import VectorStoreIndexWrapper
 from datasets import load_dataset
 from utils import write_message
+import cassio
 
+ASTRA_DB_APPLICATION_TOKEN = "AstraCS:nusrvtqgouAoNEBfiJgEKQAc:ec151f23bb3133a64017ad987021521cd8c537109ae210faa3e7a13410ce591c"
+ASTRA_DB_ID = "0c773760-c1ef-4199-b7e3-31867cec6b9d" 
+
+cassio.init(token=ASTRA_DB_APPLICATION_TOKEN, database_id=ASTRA_DB_ID)
 # tag::setup[]
 # Page Config
 st.set_page_config("Movie Expert", page_icon=":movie_camera:")
@@ -35,26 +37,12 @@ chat_llm = ChatOpenAI(openai_api_key = st.secrets["OPENAI_API_KEY"])
 
 #####
 
-'''
-    Cassandra AstraDB part
-'''
-keyspace_name = "qa_docs"
-table_name = "qa_table"
-
-
-
-cloud_config= {
-  'secure_connect_bundle': 'secure-connect-db-competition.zip'
-}
-auth_provider = PlainTextAuthProvider(st.secrets["ASTRADB_ID"], st.secrets["ASTRADB_SECRET"])
-cluster = Cluster(cloud=cloud_config, auth_provider=auth_provider)
-session = cluster.connect()
-
+table_name = "qa_competiton_table"
 
 astra_vector_store = Cassandra(
     embedding=embedding_provider,
-    session=session,
-    keyspace=keyspace_name,
+    session=None,
+    keyspace=None,
     table_name=table_name,
 )
 
